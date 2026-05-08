@@ -1,11 +1,24 @@
 // Create context menu item on install
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
-        id: "open-links-in-selection",
+        id: "links-in-selection",
         title: "Open links in selection",
         contexts: ["selection"]
     });
 });
+
+// Update context menu title when we get a link count
+function updateContextMenuTitle(count) {
+    if (count > 0) {
+        chrome.contextMenus.update("links-in-selection", {
+            title: `Open links in selection (${count})`
+        });
+    } else {
+        chrome.contextMenus.update("links-in-selection", {
+            title: "Open links in selection"
+        });
+    }
+}
 
 // Extract URLs from plain text (fallback)
 function extractUrlsFromText(text) {
@@ -292,6 +305,12 @@ chrome.commands.onCommand.addListener(async (command) => {
 
 // Handle confirmed links from preview overlay
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "SELECTION_LINK_COUNT") {
+        updateContextMenuTitle(message.count);
+        sendResponse({ success: true });
+        return true;
+    }
+
     if (message.type === "OPEN_CONFIRMED_LINKS") {
         loadSettings().then(settings => {
             // Don't re-deduplicate or re-slice — user already confirmed these
