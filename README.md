@@ -19,10 +19,6 @@ A Chrome extension that opens all links found in selected text via the context m
 - **Dark/light theme** — automatically matches your system theme
 - **Persistent settings** — preferences saved across browser restarts
 
-## Screenshots
-
-_Add screenshots here_
-
 ## Installation
 
 ### From source (Developer mode)
