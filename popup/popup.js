@@ -47,6 +47,18 @@ async function saveSettings() {
     });
 }
 
+// Collapsible sections
+document.querySelectorAll(".section-toggle").forEach(toggle => {
+    toggle.addEventListener("click", () => {
+        const targetId = toggle.dataset.target;
+        const content = document.getElementById(targetId);
+        const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+
+        toggle.setAttribute("aria-expanded", !isExpanded);
+        content.classList.toggle("collapsed", isExpanded);
+    });
+});
+
 // Make settings items toggle their checkbox when clicked anywhere on the row
 document.querySelectorAll(".settings-item").forEach(item => {
     item.addEventListener("click", (e) => {
@@ -121,15 +133,25 @@ function updateExtensionIcon() {
 }
 
 // Display current keyboard shortcut
-async function displayShortcut() {
+async function displayShortcuts() {
     const commands = await chrome.commands.getAll();
-    const openLinksCommand = commands.find(cmd => cmd.name === "open-links");
-    const shortcutDisplay = document.getElementById("shortcut-display");
 
-    if (openLinksCommand && openLinksCommand.shortcut) {
-        shortcutDisplay.innerHTML = `<span class="shortcut-key">${openLinksCommand.shortcut}</span>`;
+    const openCommand = commands.find(cmd => cmd.name === "open-links");
+    const copyCommand = commands.find(cmd => cmd.name === "copy-links");
+
+    const openDisplay = document.getElementById("open-shortcut-display");
+    const copyDisplay = document.getElementById("copy-shortcut-display");
+
+    if (openCommand && openCommand.shortcut) {
+        openDisplay.innerHTML = `<span class="shortcut-key">${openCommand.shortcut}</span>`;
     } else {
-        shortcutDisplay.textContent = "Not set";
+        openDisplay.textContent = "Not set";
+    }
+
+    if (copyCommand && copyCommand.shortcut) {
+        copyDisplay.innerHTML = `<span class="shortcut-key">${copyCommand.shortcut}</span>`;
+    } else {
+        copyDisplay.textContent = "Not set";
     }
 }
 
@@ -141,4 +163,4 @@ document.getElementById("change-shortcut").addEventListener("click", () => {
 // Initial load
 loadSettings();
 updateExtensionIcon();
-displayShortcut();
+displayShortcuts();

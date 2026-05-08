@@ -7,60 +7,14 @@
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
+
     <div class="container">
         <header class="header">
-            <h1>Multi Link Opener</h1>
+            <h1>Multi Link</h1>
         </header>
 
         <div class="instructions">
             <p>Select text containing links, then right-click and choose <strong>"Open links in selection"</strong></p>
-        </div>
-
-        <div class="settings-divider"></div>
-
-        <div class="settings-section-title">Options</div>
-
-        <div class="settings-list">
-            <div class="settings-item" data-for="remove-duplicates">
-                <span class="settings-item-content">
-                    <span class="settings-item-label">Remove duplicates</span>
-                    <span class="settings-item-description">Only open unique links</span>
-                </span>
-                <span class="toggle-switch-small">
-                    <input type="checkbox" id="remove-duplicates" checked>
-                    <span class="toggle-slider-small"></span>
-                </span>
-            </div>
-
-            <div class="settings-item" data-for="focus-first-tab">
-                <span class="settings-item-content">
-                    <span class="settings-item-label">Focus first tab</span>
-                    <span class="settings-item-description">Switch to the first opened link</span>
-                </span>
-                <span class="toggle-switch-small">
-                    <input type="checkbox" id="focus-first-tab">
-                    <span class="toggle-slider-small"></span>
-                </span>
-            </div>
-
-            <div class="settings-item" data-for="show-preview">
-                <span class="settings-item-content">
-                    <span class="settings-item-label">Preview before opening</span>
-                    <span class="settings-item-description">Show links and confirm before opening</span>
-                </span>
-                <span class="toggle-switch-small">
-                    <input type="checkbox" id="show-preview">
-                    <span class="toggle-slider-small"></span>
-                </span>
-            </div>
-
-            <div class="settings-item">
-                <span class="settings-item-content">
-                    <span class="settings-item-label">Max tabs</span>
-                    <span class="settings-item-description">Limit number of tabs opened at once</span>
-                </span>
-                <input type="number" class="max-tabs-input" id="max-tabs" value="20" min="1" max="100">
-            </div>
         </div>
 
         <div class="settings-divider"></div>
@@ -75,12 +29,80 @@
 
         <div class="settings-divider"></div>
 
-        <div class="shortcut-section">
+        <div class="collapsible-section">
+            <button class="section-toggle" aria-expanded="true" data-target="options-content">
+                <span class="section-toggle-title">Options</span>
+                <svg class="section-toggle-icon" viewBox="0 -960 960 960">
+                    <path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z" />
+                </svg>
+            </button>
+            <div class="section-content" id="options-content">
+                <div class="settings-list">
+                    <div class="settings-item" data-for="remove-duplicates">
+                        <span class="settings-item-content">
+                            <span class="settings-item-label">Remove duplicates</span>
+                            <span class="settings-item-description">Only open unique links</span>
+                        </span>
+                        <span class="toggle-switch-small">
+                            <input type="checkbox" id="remove-duplicates" checked>
+                            <span class="toggle-slider-small"></span>
+                        </span>
+                    </div>
+
+                    <div class="settings-item" data-for="focus-first-tab">
+                        <span class="settings-item-content">
+                            <span class="settings-item-label">Focus first tab</span>
+                            <span class="settings-item-description">Switch to the first opened link</span>
+                        </span>
+                        <span class="toggle-switch-small">
+                            <input type="checkbox" id="focus-first-tab">
+                            <span class="toggle-slider-small"></span>
+                        </span>
+                    </div>
+
+                    <div class="settings-item" data-for="show-preview">
+                        <span class="settings-item-content">
+                            <span class="settings-item-label">Preview before opening</span>
+                            <span class="settings-item-description">Show links and confirm before opening</span>
+                        </span>
+                        <span class="toggle-switch-small">
+                            <input type="checkbox" id="show-preview">
+                            <span class="toggle-slider-small"></span>
+                        </span>
+                    </div>
+
+                    <div class="settings-item">
+                        <span class="settings-item-content">
+                            <span class="settings-item-label">Max tabs</span>
+                            <span class="settings-item-description">Limit number of tabs opened at once</span>
+                        </span>
+                        <input type="number" class="max-tabs-input" id="max-tabs" value="20" min="1" max="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="settings-section-title">Keyboard shortcuts</div>
+
+        <div class="shortcut-section" title="When pressed, open all selected links">
             <span class="settings-item-content">
-                <span class="settings-item-label">Keyboard shortcut</span>
-                <span class="settings-item-description" id="shortcut-display">Loading...</span>
+                <span class="settings-item-label">Open</span>
+                <span class="settings-item-description" id="open-shortcut-display">Loading...</span>
             </span>
-            <button class="change-shortcut-btn" id="change-shortcut" title="Change shortcut in Chrome settings" aria-label="Change keyboard shortcut">
+        </div>
+
+        <div class="shortcut-section" title="When pressed, copy all selected links to clipboard">
+            <span class="settings-item-content">
+                <span class="settings-item-label">Copy</span>
+                <span class="settings-item-description" id="copy-shortcut-display">Loading...</span>
+            </span>
+        </div>
+
+        <div class="shortcut-section">
+            <span class="settings-item-content"></span>
+            <button class="change-shortcut-btn" id="change-shortcut" title="Change shortcuts in Chrome settings" aria-label="Change keyboard shortcuts">
                 Change
             </button>
         </div>

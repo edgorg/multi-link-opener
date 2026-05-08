@@ -92,17 +92,17 @@ async function loadSettings() {
 
     return {
         removeDuplicates: data.removeDuplicates !== false,
-        focusFirstTab: data.focusFirstTab || false,
+        focusFirstTab: data.focusFirstTab || true,
         maxTabs: data.maxTabs || 20,
-        showPreview: data.showPreview || false,
+        showPreview: data.showPreview || true,
         openMode: data.openMode || "normal"
     };
 }
 
 // Open URLs based on user settings
 async function openUrls(urls, settings) {
-    const removeDuplicates = settings.removeDuplicates || false;
-    const focusFirstTab = settings.focusFirstTab || false;
+    const removeDuplicates = settings.removeDuplicates || true;
+    const focusFirstTab = settings.focusFirstTab || true;
     const maxTabs = settings.maxTabs || 20;
     const openMode = settings.openMode || "normal";
 
@@ -206,13 +206,43 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // Handle keyboard shortcut
 chrome.commands.onCommand.addListener(async (command) => {
-    if (command !== "open-links") return;
-
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab) return;
 
-    let urls = await getLinksFromSelection(tab.id);
-    await processUrls(urls, tab.id, null);
+    if (command === "open-links") {
+        let urls = await getLinksFromSelection(tab.id);
+        await processUrls(urls, tab.id, null);
+        return;
+    }
+
+    if (command === "copy-links") {
+        let urls = await getLinksFromSelection(tab.id);
+
+        if (!urls || urls.length === 0) {
+            showBadge(0, true);
+            return;
+        }
+
+        const settings = await loadSettings();
+        if (settings.removeDuplicates) {
+            urls = [...new Set(urls)];
+        }
+
+        try {
+            await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: (text) => {
+                    navigator.clipboard.writeText(text);
+                },
+                args: [urls.join("\n")]
+            });
+            showBadge(urls.length);
+        } catch (e) {
+            console.warn("Could not copy to clipboard:", e.message);
+            showBadge(0, true);
+        }
+        return;
+    }
 });
 
 // Handle confirmed links from preview overlay

@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Link Opener - Open Links in Selection",
+    "name": "Multi Link - Open links in selection",
     "version": "1.0.0",
     "description": "Open all links in selected text via the context menu",
     "permissions": [
@@ -30,6 +30,12 @@
                 "default": "Ctrl+Shift+L"
             },
             "description": "Open links in selection"
+        },
+        "copy-links": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+K"
+            },
+            "description": "Copy links in selection to clipboard"
         }
     },
     "icons": {
