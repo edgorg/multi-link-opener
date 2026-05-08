@@ -51,7 +51,14 @@ async function openUrls(urls, settings) {
         urls = [...new Set(urls)];
     }
 
-    if (urls.length === 0) return;
+    if (urls.length === 0) {
+        chrome.action.setBadgeBackgroundColor({ color: "#d93025" });
+        chrome.action.setBadgeText({ text: "0" });
+        setTimeout(() => {
+            chrome.action.setBadgeText({ text: "" });
+        }, 2000);
+        return;
+    }
 
     const newTabIds = [];
 
@@ -91,6 +98,15 @@ async function openUrls(urls, settings) {
             collapsed: false
         });
     }
+
+    // Show badge with count of opened links
+    chrome.action.setBadgeBackgroundColor({ color: "#1a73e8" });
+    chrome.action.setBadgeText({ text: urls.length.toString() });
+
+    // Clear badge after 3 seconds
+    setTimeout(() => {
+        chrome.action.setBadgeText({ text: "" });
+    }, 3000);
 }
 
 // Load settings helper
@@ -119,7 +135,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         urls = extractUrlsFromText(selectedText);
     }
 
-    if (urls.length === 0) return;
+    if (urls.length === 0) {
+        chrome.action.setBadgeBackgroundColor({ color: "#d93025" });
+        chrome.action.setBadgeText({ text: "0" });
+        setTimeout(() => {
+            chrome.action.setBadgeText({ text: "" });
+        }, 2000);
+        return;
+    }
 
     const settings = await loadSettings();
     await openUrls(urls, settings);
