@@ -1,5 +1,6 @@
 const removeDuplicatesCheckbox = document.getElementById("remove-duplicates");
 const focusFirstTabCheckbox = document.getElementById("focus-first-tab");
+const maxTabsInput = document.getElementById("max-tabs");
 const segmentedControl = document.getElementById("open-mode");
 const segments = segmentedControl.querySelectorAll(".segment");
 
@@ -8,11 +9,13 @@ async function loadSettings() {
     const data = await chrome.storage.local.get([
         "removeDuplicates",
         "focusFirstTab",
+        "maxTabs",
         "openMode"
     ]);
 
     removeDuplicatesCheckbox.checked = data.removeDuplicates !== false;
     focusFirstTabCheckbox.checked = data.focusFirstTab || false;
+    maxTabsInput.value = data.maxTabs || 20;
 
     const openMode = data.openMode || "normal";
     segments.forEach(seg => {
@@ -27,9 +30,15 @@ async function saveSettings() {
     const activeSegment = segmentedControl.querySelector(".segment.active");
     const openMode = activeSegment ? activeSegment.dataset.value : "normal";
 
+    let maxTabs = parseInt(maxTabsInput.value);
+    if (isNaN(maxTabs) || maxTabs < 1) maxTabs = 1;
+    if (maxTabs > 100) maxTabs = 100;
+    maxTabsInput.value = maxTabs;
+
     await chrome.storage.local.set({
         removeDuplicates: removeDuplicatesCheckbox.checked,
         focusFirstTab: focusFirstTabCheckbox.checked,
+        maxTabs,
         openMode
     });
 }
@@ -91,6 +100,7 @@ segmentedControl.addEventListener("keydown", (e) => {
 // Save on any change
 removeDuplicatesCheckbox.addEventListener("change", saveSettings);
 focusFirstTabCheckbox.addEventListener("change", saveSettings);
+maxTabsInput.addEventListener("change", saveSettings);
 
 // Update extension icon based on current theme
 function updateExtensionIcon() {

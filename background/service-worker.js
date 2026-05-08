@@ -45,7 +45,7 @@ async function getLinksFromSelection(tabId) {
 
 // Open URLs based on user settings
 async function openUrls(urls, settings) {
-    const { removeDuplicates, focusFirstTab, openMode } = settings;
+    const { removeDuplicates, focusFirstTab, maxTabs, openMode } = settings;
 
     if (removeDuplicates) {
         urls = [...new Set(urls)];
@@ -58,6 +58,11 @@ async function openUrls(urls, settings) {
             chrome.action.setBadgeText({ text: "" });
         }, 2000);
         return;
+    }
+
+    // Enforce max tabs limit
+    if (urls.length > maxTabs) {
+        urls = urls.slice(0, maxTabs);
     }
 
     const newTabIds = [];
@@ -114,12 +119,14 @@ async function loadSettings() {
     const data = await chrome.storage.local.get([
         "removeDuplicates",
         "focusFirstTab",
+        "maxTabs",
         "openMode"
     ]);
 
     return {
         removeDuplicates: data.removeDuplicates !== false,
         focusFirstTab: data.focusFirstTab || false,
+        maxTabs: data.maxTabs || 20,
         openMode: data.openMode || "normal"
     };
 }
