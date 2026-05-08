@@ -102,3 +102,58 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         });
     }
 });
+
+// Handle keyboard shortcut
+chrome.commands.onCommand.addListener(async (command) => {
+    if (command !== "open-links") return;
+
+    // Get the active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab) return;
+
+    console.log("Keyboard shortcut triggered");
+
+    // Try to get links from content script
+    let urls = await getLinksFromSelection(tab.id);
+
+    // Fallback to plain text (won't work for keyboard shortcut since no selectionText available)
+    if (!urls || urls.length === 0) {
+        console.log("No URLs found via shortcut");
+        return;
+    }
+
+    // Load settings
+    const data = await chrome.storage.local.get([
+        "removeDuplicates",
+        "openInGroup",
+        "focusFirstTab"
+    ]);
+
+    const removeDuplicates = data.removeDuplicates !== false;
+    const openInGroup = data.openInGroup || false;
+    const focusFirstTab = data.focusFirstTab || false;
+
+    if (removeDuplicates) {
+        urls = [...new Set(urls)];
+    }
+
+    console.log("Opening URLs via shortcut:", urls);
+
+    const newTabIds = [];
+
+    for (let i = 0; i < urls.length; i++) {
+        const newTab = await chrome.tabs.create({
+            url: urls[i],
+            active: (i === 0 && focusFirstTab)
+        });
+        newTabIds.push(newTab.id);
+    }
+
+    if (openInGroup && newTabIds.length > 0) {
+        const groupId = await chrome.tabs.group({ tabIds: newTabIds });
+        chrome.tabGroups.update(groupId, {
+            title: "Links",
+            collapsed: false
+        });
+    }
+});

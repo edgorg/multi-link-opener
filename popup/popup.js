@@ -57,3 +57,23 @@ function updateExtensionIcon() {
 // Initial load
 loadSettings();
 updateExtensionIcon();
+
+// Display current keyboard shortcut
+async function displayShortcut() {
+    const commands = await chrome.commands.getAll();
+    const openLinksCommand = commands.find(cmd => cmd.name === "open-links");
+    const shortcutDisplay = document.getElementById("shortcut-display");
+
+    if (openLinksCommand && openLinksCommand.shortcut) {
+        shortcutDisplay.innerHTML = `<span class="shortcut-key">${openLinksCommand.shortcut}</span>`;
+    } else {
+        shortcutDisplay.textContent = "Not set";
+    }
+}
+
+// Change shortcut button — opens Chrome's shortcut settings
+document.getElementById("change-shortcut").addEventListener("click", () => {
+    chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
+});
+
+displayShortcut();
