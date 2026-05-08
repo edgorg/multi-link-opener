@@ -237,6 +237,51 @@ chrome.commands.onCommand.addListener(async (command) => {
                 args: [urls.join("\n")]
             });
             showBadge(urls.length);
+
+            // Show toast notification
+            await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: (count) => {
+                    const existing = document.getElementById("link-opener-toast");
+                    if (existing) existing.remove();
+
+                    const toast = document.createElement("div");
+                    toast.id = "link-opener-toast";
+                    toast.textContent = `${count} link${count === 1 ? "" : "s"} copied to clipboard`;
+                    toast.style.cssText = `
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #323232;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: "Segoe UI", Roboto, sans-serif;
+            font-size: 13px;
+            z-index: 2147483647;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: loToastIn 0.2s ease;
+          `;
+
+                    const style = document.createElement("style");
+                    style.textContent = `
+            @keyframes loToastIn {
+              from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+              to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+          `;
+                    toast.appendChild(style);
+                    document.body.appendChild(toast);
+
+                    setTimeout(() => {
+                        toast.style.opacity = "0";
+                        toast.style.transition = "opacity 0.2s ease";
+                        setTimeout(() => toast.remove(), 200);
+                    }, 2000);
+                },
+                args: [urls.length]
+            });
         } catch (e) {
             console.warn("Could not copy to clipboard:", e.message);
             showBadge(0, true);
