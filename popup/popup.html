@@ -48,10 +48,10 @@
 
         <div class="settings-section-title">Open links in</div>
 
-        <div class="segmented-control" id="open-mode">
-            <button class="segment active" data-value="normal" title="The current browser">Current</button>
-            <button class="segment" data-value="group" title="Tab group in the current browser">Group</button>
-            <button class="segment" data-value="window" title="A new browser window">New window</button>
+        <div class="segmented-control" id="open-mode" role="radiogroup" aria-label="Open links in">
+            <button class="segment active" data-value="normal" role="radio" aria-checked="true" title="The current browser window">Current</button>
+            <button class="segment" data-value="group" role="radio" aria-checked="false" title="Tab group in the current browser window">Group</button>
+            <button class="segment" data-value="window" role="radio" aria-checked="false" title="A new browser window">New window</button>
         </div>
 
         <div class="settings-divider"></div>
@@ -61,7 +61,7 @@
                 <span class="settings-item-label">Keyboard shortcut</span>
                 <span class="settings-item-description" id="shortcut-display">Loading...</span>
             </span>
-            <button class="change-shortcut-btn" id="change-shortcut" title="Change shortcut in Chrome settings">
+            <button class="change-shortcut-btn" id="change-shortcut" title="Change shortcut in Chrome settings" aria-label="Change keyboard shortcut">
                 Change
             </button>
         </div>

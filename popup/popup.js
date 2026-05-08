@@ -16,7 +16,9 @@ async function loadSettings() {
 
     const openMode = data.openMode || "normal";
     segments.forEach(seg => {
-        seg.classList.toggle("active", seg.dataset.value === openMode);
+        const isActive = seg.dataset.value === openMode;
+        seg.classList.toggle("active", isActive);
+        seg.setAttribute("aria-checked", isActive);
     });
 }
 
@@ -47,10 +49,43 @@ document.querySelectorAll(".settings-item").forEach(item => {
 // Segmented control handler
 segments.forEach(segment => {
     segment.addEventListener("click", () => {
-        segments.forEach(s => s.classList.remove("active"));
+        segments.forEach(s => {
+            s.classList.remove("active");
+            s.setAttribute("aria-checked", "false");
+        });
         segment.classList.add("active");
+        segment.setAttribute("aria-checked", "true");
         saveSettings();
     });
+});
+
+// Keyboard navigation for segmented control (arrow keys)
+segmentedControl.addEventListener("keydown", (e) => {
+    const segmentArray = Array.from(segments);
+    const currentIndex = segmentArray.findIndex(s => s.classList.contains("active"));
+
+    let newIndex = currentIndex;
+
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        newIndex = (currentIndex + 1) % segmentArray.length;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        newIndex = (currentIndex - 1 + segmentArray.length) % segmentArray.length;
+    } else {
+        return;
+    }
+
+    segmentArray[currentIndex].classList.remove("active");
+    segmentArray[currentIndex].setAttribute("aria-checked", "false");
+    segmentArray[currentIndex].setAttribute("tabindex", "-1");
+
+    segmentArray[newIndex].classList.add("active");
+    segmentArray[newIndex].setAttribute("aria-checked", "true");
+    segmentArray[newIndex].setAttribute("tabindex", "0");
+    segmentArray[newIndex].focus();
+
+    saveSettings();
 });
 
 // Save on any change
