@@ -43,20 +43,75 @@ async function getLinksFromSelection(tabId) {
     });
 }
 
+// Show preview overlay in the tab
+async function showPreview(tabId, urls) {
+    try {
+        await chrome.scripting.executeScript({
+            target: { tabId },
+            files: ["content/preview.js"]
+        });
+    } catch (e) {
+        console.warn("Could not inject preview:", e.message);
+        return false;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    return new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, { type: "SHOW_PREVIEW", urls }, (response) => {
+            if (chrome.runtime.lastError) {
+                resolve(false);
+            } else {
+                resolve(true);
+            }
+        });
+    });
+}
+
+// Show badge with count
+function showBadge(count, isError = false) {
+    chrome.action.setBadgeBackgroundColor({
+        color: isError ? "#d93025" : "#1a73e8"
+    });
+    chrome.action.setBadgeText({ text: count.toString() });
+
+    setTimeout(() => {
+        chrome.action.setBadgeText({ text: "" });
+    }, 3000);
+}
+
+// Load settings helper
+async function loadSettings() {
+    const data = await chrome.storage.local.get([
+        "removeDuplicates",
+        "focusFirstTab",
+        "maxTabs",
+        "showPreview",
+        "openMode"
+    ]);
+
+    return {
+        removeDuplicates: data.removeDuplicates !== false,
+        focusFirstTab: data.focusFirstTab || false,
+        maxTabs: data.maxTabs || 20,
+        showPreview: data.showPreview || false,
+        openMode: data.openMode || "normal"
+    };
+}
+
 // Open URLs based on user settings
 async function openUrls(urls, settings) {
-    const { removeDuplicates, focusFirstTab, maxTabs, openMode } = settings;
+    const removeDuplicates = settings.removeDuplicates || false;
+    const focusFirstTab = settings.focusFirstTab || false;
+    const maxTabs = settings.maxTabs || 20;
+    const openMode = settings.openMode || "normal";
 
     if (removeDuplicates) {
         urls = [...new Set(urls)];
     }
 
     if (urls.length === 0) {
-        chrome.action.setBadgeBackgroundColor({ color: "#d93025" });
-        chrome.action.setBadgeText({ text: "0" });
-        setTimeout(() => {
-            chrome.action.setBadgeText({ text: "" });
-        }, 2000);
+        showBadge(0, true);
         return;
     }
 
@@ -68,7 +123,6 @@ async function openUrls(urls, settings) {
     const newTabIds = [];
 
     if (openMode === "window") {
-        // Open in new window
         const newWindow = await chrome.windows.create({
             url: urls[0],
             focused: focusFirstTab
@@ -85,7 +139,6 @@ async function openUrls(urls, settings) {
             newTabIds.push(newTab.id);
         }
     } else {
-        // Open in current window (normal or group)
         for (let i = 0; i < urls.length; i++) {
             const newTab = await chrome.tabs.create({
                 url: urls[i],
@@ -95,7 +148,6 @@ async function openUrls(urls, settings) {
         }
     }
 
-    // Group tabs if mode is "group"
     if (openMode === "group" && newTabIds.length > 0) {
         const groupId = await chrome.tabs.group({ tabIds: newTabIds });
         chrome.tabGroups.update(groupId, {
@@ -104,31 +156,42 @@ async function openUrls(urls, settings) {
         });
     }
 
-    // Show badge with count of opened links
-    chrome.action.setBadgeBackgroundColor({ color: "#1a73e8" });
-    chrome.action.setBadgeText({ text: urls.length.toString() });
-
-    // Clear badge after 3 seconds
-    setTimeout(() => {
-        chrome.action.setBadgeText({ text: "" });
-    }, 3000);
+    showBadge(newTabIds.length);
 }
 
-// Load settings helper
-async function loadSettings() {
-    const data = await chrome.storage.local.get([
-        "removeDuplicates",
-        "focusFirstTab",
-        "maxTabs",
-        "openMode"
-    ]);
+// Process found URLs (preview or open directly)
+async function processUrls(urls, tabId, fallbackText) {
+    if (!urls || urls.length === 0) {
+        if (fallbackText) {
+            urls = extractUrlsFromText(fallbackText);
+        }
+    }
 
-    return {
-        removeDuplicates: data.removeDuplicates !== false,
-        focusFirstTab: data.focusFirstTab || false,
-        maxTabs: data.maxTabs || 20,
-        openMode: data.openMode || "normal"
-    };
+    if (!urls || urls.length === 0) {
+        showBadge(0, true);
+        return;
+    }
+
+    const settings = await loadSettings();
+
+    if (settings.showPreview) {
+        // Apply deduplication and max tabs before showing preview
+        let previewUrls = [...urls];
+
+        if (settings.removeDuplicates) {
+            previewUrls = [...new Set(previewUrls)];
+        }
+
+        if (previewUrls.length > settings.maxTabs) {
+            previewUrls = previewUrls.slice(0, settings.maxTabs);
+        }
+
+        // Show preview overlay — the overlay will send OPEN_CONFIRMED_LINKS when confirmed
+        await showPreview(tabId, previewUrls);
+    } else {
+        // Open directly
+        await openUrls(urls, settings);
+    }
 }
 
 // Handle context menu click
@@ -136,23 +199,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId !== "open-links-in-selection") return;
 
     let urls = await getLinksFromSelection(tab.id);
+    const fallbackText = info.selectionText || "";
 
-    if (!urls || urls.length === 0) {
-        const selectedText = info.selectionText || "";
-        urls = extractUrlsFromText(selectedText);
-    }
-
-    if (urls.length === 0) {
-        chrome.action.setBadgeBackgroundColor({ color: "#d93025" });
-        chrome.action.setBadgeText({ text: "0" });
-        setTimeout(() => {
-            chrome.action.setBadgeText({ text: "" });
-        }, 2000);
-        return;
-    }
-
-    const settings = await loadSettings();
-    await openUrls(urls, settings);
+    await processUrls(urls, tab.id, fallbackText);
 });
 
 // Handle keyboard shortcut
@@ -163,9 +212,22 @@ chrome.commands.onCommand.addListener(async (command) => {
     if (!tab) return;
 
     let urls = await getLinksFromSelection(tab.id);
+    await processUrls(urls, tab.id, null);
+});
 
-    if (!urls || urls.length === 0) return;
-
-    const settings = await loadSettings();
-    await openUrls(urls, settings);
+// Handle confirmed links from preview overlay
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "OPEN_CONFIRMED_LINKS") {
+        loadSettings().then(settings => {
+            // Don't re-deduplicate or re-slice — user already confirmed these
+            openUrls(message.urls, {
+                removeDuplicates: false,
+                focusFirstTab: settings.focusFirstTab,
+                maxTabs: 999,
+                openMode: settings.openMode
+            });
+        });
+        sendResponse({ success: true });
+        return true;
+    }
 });

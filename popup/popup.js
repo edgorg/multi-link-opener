@@ -1,6 +1,7 @@
 const removeDuplicatesCheckbox = document.getElementById("remove-duplicates");
 const focusFirstTabCheckbox = document.getElementById("focus-first-tab");
 const maxTabsInput = document.getElementById("max-tabs");
+const showPreviewCheckbox = document.getElementById("show-preview");
 const segmentedControl = document.getElementById("open-mode");
 const segments = segmentedControl.querySelectorAll(".segment");
 
@@ -10,12 +11,14 @@ async function loadSettings() {
         "removeDuplicates",
         "focusFirstTab",
         "maxTabs",
+        "showPreview",
         "openMode"
     ]);
 
     removeDuplicatesCheckbox.checked = data.removeDuplicates !== false;
     focusFirstTabCheckbox.checked = data.focusFirstTab || false;
     maxTabsInput.value = data.maxTabs || 20;
+    showPreviewCheckbox.checked = data.showPreview || false;
 
     const openMode = data.openMode || "normal";
     segments.forEach(seg => {
@@ -39,6 +42,7 @@ async function saveSettings() {
         removeDuplicates: removeDuplicatesCheckbox.checked,
         focusFirstTab: focusFirstTabCheckbox.checked,
         maxTabs,
+        showPreview: showPreviewCheckbox.checked,
         openMode
     });
 }
@@ -101,6 +105,7 @@ segmentedControl.addEventListener("keydown", (e) => {
 removeDuplicatesCheckbox.addEventListener("change", saveSettings);
 focusFirstTabCheckbox.addEventListener("change", saveSettings);
 maxTabsInput.addEventListener("change", saveSettings);
+showPreviewCheckbox.addEventListener("change", saveSettings);
 
 // Update extension icon based on current theme
 function updateExtensionIcon() {
