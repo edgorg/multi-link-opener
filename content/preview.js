@@ -1,9 +1,7 @@
 ﻿(function () {
-    // Remove existing preview if any
     const existing = document.getElementById("link-opener-preview");
     if (existing) existing.remove();
 
-    // Remove any previous listener
     if (window.__linkOpenerPreviewListener) {
         chrome.runtime.onMessage.removeListener(window.__linkOpenerPreviewListener);
     }
@@ -19,7 +17,6 @@
     }
 
     function showPreview(urls) {
-        // Remove existing preview if somehow still there
         const existing = document.getElementById("link-opener-preview");
         if (existing) existing.remove();
 
@@ -29,7 +26,7 @@
       <div class="lo-backdrop"></div>
       <div class="lo-panel">
         <div class="lo-header">
-          <span class="lo-title">Open ${urls.length} link${urls.length === 1 ? "" : "s"}?</span>
+          <span class="lo-title">${urls.length} link${urls.length === 1 ? "" : "s"} found</span>
           <button class="lo-close" title="Cancel">✕</button>
         </div>
         <div class="lo-list">
@@ -47,7 +44,8 @@
           </div>
           <div class="lo-actions">
             <button class="lo-cancel">Cancel</button>
-            <button class="lo-confirm">Open selected</button>
+            <button class="lo-copy">Copy</button>
+            <button class="lo-confirm">Open</button>
           </div>
         </div>
       </div>
@@ -191,6 +189,30 @@
       #link-opener-preview .lo-cancel:hover {
         background: #f1f3f4;
       }
+      #link-opener-preview .lo-copy {
+        background: none;
+        border: 1px solid #dadce0;
+        color: #5f6368;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.1s ease;
+      }
+      #link-opener-preview .lo-copy:hover {
+        background: #f1f3f4;
+      }
+      #link-opener-preview .lo-copy:disabled {
+        color: #dadce0;
+        border-color: #dadce0;
+        cursor: default;
+        background: none;
+      }
+      #link-opener-preview .lo-copy.copied {
+        border-color: #34a853;
+        color: #34a853;
+      }
       #link-opener-preview .lo-confirm {
         background: #1a73e8;
         border: none;
@@ -255,6 +277,22 @@
         #link-opener-preview .lo-cancel:hover {
           background: #35363a;
         }
+        #link-opener-preview .lo-copy {
+          border-color: #3c4043;
+          color: #9aa0a6;
+        }
+        #link-opener-preview .lo-copy:hover {
+          background: #35363a;
+        }
+        #link-opener-preview .lo-copy:disabled {
+          color: #3c4043;
+          border-color: #3c4043;
+          background: none;
+        }
+        #link-opener-preview .lo-copy.copied {
+          border-color: #34a853;
+          color: #34a853;
+        }
         #link-opener-preview .lo-confirm {
           background: #8ab4f8;
           color: #202124;
@@ -272,27 +310,36 @@
         overlay.appendChild(style);
         document.body.appendChild(overlay);
 
-        // Event handlers
         const confirmBtn = overlay.querySelector(".lo-confirm");
+        const copyBtn = overlay.querySelector(".lo-copy");
         const cancelBtn = overlay.querySelector(".lo-cancel");
         const closeBtn = overlay.querySelector(".lo-close");
         const selectAllBtn = overlay.querySelector(".lo-select-all");
         const selectNoneBtn = overlay.querySelector(".lo-select-none");
         const checkboxes = overlay.querySelectorAll('input[type="checkbox"]');
 
-        function updateConfirmButton() {
+        function getSelectedUrls() {
             const checked = overlay.querySelectorAll('input[type="checkbox"]:checked');
-            confirmBtn.textContent = `Open ${checked.length} link${checked.length === 1 ? "" : "s"}`;
-            confirmBtn.disabled = checked.length === 0;
+            return Array.from(checked).map(cb => cb.dataset.url);
+        }
+
+        function updateButtons() {
+            const count = getSelectedUrls().length;
+            confirmBtn.textContent = `Open ${count}`;
+            confirmBtn.disabled = count === 0;
+            copyBtn.disabled = count === 0;
+            copyBtn.textContent = "Copy";
+            copyBtn.classList.remove("copied");
         }
 
         function close() {
             overlay.remove();
+            document.removeEventListener("keydown", escHandler);
+            document.removeEventListener("keydown", enterHandler);
         }
 
         function confirm() {
-            const checked = overlay.querySelectorAll('input[type="checkbox"]:checked');
-            const selectedUrls = Array.from(checked).map(cb => cb.dataset.url);
+            const selectedUrls = getSelectedUrls();
             close();
 
             chrome.runtime.sendMessage({
@@ -301,21 +348,40 @@
             });
         }
 
+        async function copyLinks() {
+            const selectedUrls = getSelectedUrls();
+            if (selectedUrls.length === 0) return;
+
+            try {
+                await navigator.clipboard.writeText(selectedUrls.join("\n"));
+                copyBtn.textContent = "Copied!";
+                copyBtn.classList.add("copied");
+
+                setTimeout(() => {
+                    copyBtn.textContent = "Copy";
+                    copyBtn.classList.remove("copied");
+                }, 2000);
+            } catch (e) {
+                console.warn("Could not copy:", e);
+            }
+        }
+
         checkboxes.forEach(cb => {
-            cb.addEventListener("change", updateConfirmButton);
+            cb.addEventListener("change", updateButtons);
         });
 
         selectAllBtn.addEventListener("click", () => {
             checkboxes.forEach(cb => { cb.checked = true; });
-            updateConfirmButton();
+            updateButtons();
         });
 
         selectNoneBtn.addEventListener("click", () => {
             checkboxes.forEach(cb => { cb.checked = false; });
-            updateConfirmButton();
+            updateButtons();
         });
 
         confirmBtn.addEventListener("click", confirm);
+        copyBtn.addEventListener("click", copyLinks);
         cancelBtn.addEventListener("click", close);
         closeBtn.addEventListener("click", close);
 
@@ -324,26 +390,21 @@
         const escHandler = (e) => {
             if (e.key === "Escape") {
                 close();
-                document.removeEventListener("keydown", escHandler);
-                document.removeEventListener("keydown", enterHandler);
             }
         };
 
         const enterHandler = (e) => {
             if (e.key === "Enter" && !confirmBtn.disabled) {
                 confirm();
-                document.removeEventListener("keydown", escHandler);
-                document.removeEventListener("keydown", enterHandler);
             }
         };
 
         document.addEventListener("keydown", escHandler);
         document.addEventListener("keydown", enterHandler);
 
-        updateConfirmButton();
+        updateButtons();
     }
 
-    // Set up listener
     window.__linkOpenerPreviewListener = (message, sender, sendResponse) => {
         if (message.type === "SHOW_PREVIEW") {
             showPreview(message.urls);
