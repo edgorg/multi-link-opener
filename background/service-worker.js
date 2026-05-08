@@ -29,6 +29,8 @@ async function getLinksFromSelection(tabId) {
         return null;
     }
 
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     return new Promise((resolve) => {
         chrome.tabs.sendMessage(tabId, { type: "GET_SELECTED_LINKS" }, (response) => {
             if (chrome.runtime.lastError) {
@@ -41,119 +43,99 @@ async function getLinksFromSelection(tabId) {
     });
 }
 
-// Handle context menu click
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId !== "open-links-in-selection") return;
+// Open URLs based on user settings
+async function openUrls(urls, settings) {
+    const { removeDuplicates, focusFirstTab, openMode } = settings;
 
-    console.log("Context menu clicked");
-    console.log("Selection text:", info.selectionText);
-
-    // Try to get links from content script (includes hyperlinks)
-    let urls = await getLinksFromSelection(tab.id);
-    console.log("URLs from content script:", urls);
-
-    // Fallback to plain text extraction if content script failed
-    if (!urls || urls.length === 0) {
-        const selectedText = info.selectionText || "";
-        urls = extractUrlsFromText(selectedText);
-        console.log("URLs from plain text fallback:", urls);
-    }
-
-    if (urls.length === 0) {
-        console.log("No URLs found");
-        return;
-    }
-
-    // Load settings
-    const data = await chrome.storage.local.get([
-        "removeDuplicates",
-        "openInGroup",
-        "focusFirstTab"
-    ]);
-
-    const removeDuplicates = data.removeDuplicates !== false;
-    const openInGroup = data.openInGroup || false;
-    const focusFirstTab = data.focusFirstTab || false;
-
-    // Remove duplicates if enabled
     if (removeDuplicates) {
         urls = [...new Set(urls)];
     }
 
-    console.log("Opening URLs:", urls);
+    if (urls.length === 0) return;
 
-    // Open tabs
     const newTabIds = [];
 
-    for (let i = 0; i < urls.length; i++) {
-        const newTab = await chrome.tabs.create({
-            url: urls[i],
-            active: (i === 0 && focusFirstTab)
+    if (openMode === "window") {
+        // Open in new window
+        const newWindow = await chrome.windows.create({
+            url: urls[0],
+            focused: focusFirstTab
         });
-        newTabIds.push(newTab.id);
+
+        newTabIds.push(newWindow.tabs[0].id);
+
+        for (let i = 1; i < urls.length; i++) {
+            const newTab = await chrome.tabs.create({
+                url: urls[i],
+                windowId: newWindow.id,
+                active: false
+            });
+            newTabIds.push(newTab.id);
+        }
+    } else {
+        // Open in current window (normal or group)
+        for (let i = 0; i < urls.length; i++) {
+            const newTab = await chrome.tabs.create({
+                url: urls[i],
+                active: (i === 0 && focusFirstTab)
+            });
+            newTabIds.push(newTab.id);
+        }
     }
 
-    // Group tabs if enabled
-    if (openInGroup && newTabIds.length > 0) {
+    // Group tabs if mode is "group"
+    if (openMode === "group" && newTabIds.length > 0) {
         const groupId = await chrome.tabs.group({ tabIds: newTabIds });
         chrome.tabGroups.update(groupId, {
             title: "Links",
             collapsed: false
         });
     }
+}
+
+// Load settings helper
+async function loadSettings() {
+    const data = await chrome.storage.local.get([
+        "removeDuplicates",
+        "focusFirstTab",
+        "openMode"
+    ]);
+
+    return {
+        removeDuplicates: data.removeDuplicates !== false,
+        focusFirstTab: data.focusFirstTab || false,
+        openMode: data.openMode || "normal"
+    };
+}
+
+// Handle context menu click
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId !== "open-links-in-selection") return;
+
+    let urls = await getLinksFromSelection(tab.id);
+
+    if (!urls || urls.length === 0) {
+        const selectedText = info.selectionText || "";
+        urls = extractUrlsFromText(selectedText);
+    }
+
+    if (urls.length === 0) return;
+
+    const settings = await loadSettings();
+    await openUrls(urls, settings);
 });
 
 // Handle keyboard shortcut
 chrome.commands.onCommand.addListener(async (command) => {
     if (command !== "open-links") return;
 
-    // Get the active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab) return;
 
-    console.log("Keyboard shortcut triggered");
-
-    // Try to get links from content script
     let urls = await getLinksFromSelection(tab.id);
 
-    // Fallback to plain text (won't work for keyboard shortcut since no selectionText available)
-    if (!urls || urls.length === 0) {
-        console.log("No URLs found via shortcut");
-        return;
-    }
+    if (!urls || urls.length === 0) return;
 
-    // Load settings
-    const data = await chrome.storage.local.get([
-        "removeDuplicates",
-        "openInGroup",
-        "focusFirstTab"
-    ]);
-
-    const removeDuplicates = data.removeDuplicates !== false;
-    const openInGroup = data.openInGroup || false;
-    const focusFirstTab = data.focusFirstTab || false;
-
-    if (removeDuplicates) {
-        urls = [...new Set(urls)];
-    }
-
-    console.log("Opening URLs via shortcut:", urls);
-
-    const newTabIds = [];
-
-    for (let i = 0; i < urls.length; i++) {
-        const newTab = await chrome.tabs.create({
-            url: urls[i],
-            active: (i === 0 && focusFirstTab)
-        });
-        newTabIds.push(newTab.id);
-    }
-
-    if (openInGroup && newTabIds.length > 0) {
-        const groupId = await chrome.tabs.group({ tabIds: newTabIds });
-        chrome.tabGroups.update(groupId, {
-            title: "Links",
-            collapsed: false
-        });
-    }
+    const settings = await loadSettings();
+    await openUrls(urls, settings);
 });

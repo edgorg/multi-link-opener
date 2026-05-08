@@ -1,26 +1,34 @@
 const removeDuplicatesCheckbox = document.getElementById("remove-duplicates");
-const openInGroupCheckbox = document.getElementById("open-in-group");
 const focusFirstTabCheckbox = document.getElementById("focus-first-tab");
+const segmentedControl = document.getElementById("open-mode");
+const segments = segmentedControl.querySelectorAll(".segment");
 
 // Load saved settings
 async function loadSettings() {
     const data = await chrome.storage.local.get([
         "removeDuplicates",
-        "openInGroup",
-        "focusFirstTab"
+        "focusFirstTab",
+        "openMode"
     ]);
 
-    removeDuplicatesCheckbox.checked = data.removeDuplicates !== false; // Default true
-    openInGroupCheckbox.checked = data.openInGroup || false;
+    removeDuplicatesCheckbox.checked = data.removeDuplicates !== false;
     focusFirstTabCheckbox.checked = data.focusFirstTab || false;
+
+    const openMode = data.openMode || "normal";
+    segments.forEach(seg => {
+        seg.classList.toggle("active", seg.dataset.value === openMode);
+    });
 }
 
 // Save settings
 async function saveSettings() {
+    const activeSegment = segmentedControl.querySelector(".segment.active");
+    const openMode = activeSegment ? activeSegment.dataset.value : "normal";
+
     await chrome.storage.local.set({
         removeDuplicates: removeDuplicatesCheckbox.checked,
-        openInGroup: openInGroupCheckbox.checked,
-        focusFirstTab: focusFirstTabCheckbox.checked
+        focusFirstTab: focusFirstTabCheckbox.checked,
+        openMode
     });
 }
 
@@ -36,9 +44,17 @@ document.querySelectorAll(".settings-item").forEach(item => {
     });
 });
 
+// Segmented control handler
+segments.forEach(segment => {
+    segment.addEventListener("click", () => {
+        segments.forEach(s => s.classList.remove("active"));
+        segment.classList.add("active");
+        saveSettings();
+    });
+});
+
 // Save on any change
 removeDuplicatesCheckbox.addEventListener("change", saveSettings);
-openInGroupCheckbox.addEventListener("change", saveSettings);
 focusFirstTabCheckbox.addEventListener("change", saveSettings);
 
 // Update extension icon based on current theme
@@ -54,10 +70,6 @@ function updateExtensionIcon() {
     });
 }
 
-// Initial load
-loadSettings();
-updateExtensionIcon();
-
 // Display current keyboard shortcut
 async function displayShortcut() {
     const commands = await chrome.commands.getAll();
@@ -71,9 +83,12 @@ async function displayShortcut() {
     }
 }
 
-// Change shortcut button — opens Chrome's shortcut settings
+// Change shortcut button
 document.getElementById("change-shortcut").addEventListener("click", () => {
     chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
 });
 
+// Initial load
+loadSettings();
+updateExtensionIcon();
 displayShortcut();

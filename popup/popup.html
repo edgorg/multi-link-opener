@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Opener</title>
+    <title>Multi Link Opener</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>Link Opener</h1>
+            <h1>Multi Link Opener</h1>
         </header>
 
         <div class="instructions">
@@ -32,17 +32,6 @@
                 </span>
             </div>
 
-            <div class="settings-item" data-for="open-in-group">
-                <span class="settings-item-content">
-                    <span class="settings-item-label">Open in tab group</span>
-                    <span class="settings-item-description">Group opened links together</span>
-                </span>
-                <span class="toggle-switch-small">
-                    <input type="checkbox" id="open-in-group">
-                    <span class="toggle-slider-small"></span>
-                </span>
-            </div>
-
             <div class="settings-item" data-for="focus-first-tab">
                 <span class="settings-item-content">
                     <span class="settings-item-label">Focus first tab</span>
@@ -53,6 +42,16 @@
                     <span class="toggle-slider-small"></span>
                 </span>
             </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="settings-section-title">Open links in</div>
+
+        <div class="segmented-control" id="open-mode">
+            <button class="segment active" data-value="normal" title="The current browser">Current</button>
+            <button class="segment" data-value="group" title="Tab group in the current browser">Group</button>
+            <button class="segment" data-value="window" title="A new browser window">New window</button>
         </div>
 
         <div class="settings-divider"></div>
