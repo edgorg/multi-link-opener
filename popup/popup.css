@@ -156,6 +156,18 @@ body {
     outline-offset: -2px;
 }
 
+/* Section header with action button */
+.section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0 4px;
+}
+
+    .section-header-row .settings-section-title {
+        padding: 0;
+    }
+
 /* Settings section title */
 .settings-section-title {
     font-size: 11px;
@@ -304,7 +316,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px;
+    padding: 6px 10px;
     border-radius: 8px;
 }
 
@@ -316,6 +328,20 @@ body {
     border-radius: 4px;
     padding: 2px 6px;
     color: var(--text-primary);
+}
+
+/* Shortcut label with icon */
+.shortcut-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shortcut-icon {
+    width: 14px;
+    height: 14px;
+    fill: var(--text-secondary);
+    flex-shrink: 0;
 }
 
 .change-shortcut-btn {
