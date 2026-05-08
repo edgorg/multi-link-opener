@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Link Opener - Test Page</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            line-height: 1.8;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 40px;
+        }
+
+        .test-block {
+            background: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Link Opener - Test Page</h1>
+    <p>Use this page to test the extension. Select text in each block, right-click, and choose "Open links in selection".</p>
+
+    <h2>Test 1: Raw URLs in text</h2>
+    <div class="test-block">
+        Check out https://example.com and also visit https://google.com for more info.
+        You might also like https://github.com which is great for developers.
+    </div>
+    <p><strong>Expected:</strong> 3 tabs open (example.com, google.com, github.com)</p>
+
+    <h2>Test 2: Hyperlinked text (href differs from visible text)</h2>
+    <div class="test-block">
+        Visit <a href="https://www.wikipedia.org">the free encyclopedia</a> and
+        <a href="https://stackoverflow.com">the developer Q&A site</a> for help.
+    </div>
+    <p><strong>Expected:</strong> 2 tabs open (wikipedia.org, stackoverflow.com)</p>
+
+    <h2>Test 3: Mixed raw URLs and hyperlinks</h2>
+    <div class="test-block">
+        Here's a raw link https://example.com and a
+        <a href="https://mozilla.org">hyperlinked one</a> in the same selection.
+    </div>
+    <p><strong>Expected:</strong> 2 tabs open (example.com, mozilla.org)</p>
+
+    <h2>Test 4: Duplicate links</h2>
+    <div class="test-block">
+        Visit https://example.com here, and also https://example.com here again.
+        Plus <a href="https://example.com">this link</a> which is the same.
+    </div>
+    <p><strong>Expected (duplicates ON):</strong> 1 tab opens</p>
+    <p><strong>Expected (duplicates OFF):</strong> 3 tabs open</p>
+
+    <h2>Test 5: No links in selection</h2>
+    <div class="test-block">
+        This is just plain text with no links at all. Nothing to open here.
+    </div>
+    <p><strong>Expected:</strong> Nothing happens</p>
+
+    <h2>Test 6: Links with trailing punctuation</h2>
+    <div class="test-block">
+        Check https://example.com, and https://google.com. Also see https://github.com!
+    </div>
+    <p><strong>Expected:</strong> 3 clean tabs open (no trailing commas/periods in URLs)</p>
+
+    <h2>Test 7: Links in parentheses</h2>
+    <div class="test-block">
+        More info available (https://example.com) and also (https://google.com).
+    </div>
+    <p><strong>Expected:</strong> 2 tabs open with clean URLs</p>
+
+    <h2>Test 8: Single link</h2>
+    <div class="test-block">
+        Just one link: <a href="https://example.com">click here</a>
+    </div>
+    <p><strong>Expected:</strong> 1 tab opens</p>
+
+    <h2>Test 9: Many links (stress test)</h2>
+    <div class="test-block">
+        <a href="https://example.com/1">Link 1</a>
+        <a href="https://example.com/2">Link 2</a>
+        <a href="https://example.com/3">Link 3</a>
+        <a href="https://example.com/4">Link 4</a>
+        <a href="https://example.com/5">Link 5</a>
+        <a href="https://example.com/6">Link 6</a>
+        <a href="https://example.com/7">Link 7</a>
+        <a href="https://example.com/8">Link 8</a>
+        <a href="https://example.com/9">Link 9</a>
+        <a href="https://example.com/10">Link 10</a>
+    </div>
+    <p><strong>Expected:</strong> 10 tabs open</p>
+
+    <h2>Settings Tests</h2>
+    <p>Use the test blocks above with different settings:</p>
+    <table border="1" cellpadding="8" style="border-collapse: collapse;">
+        <tr>
+            <th>Setting</th>
+            <th>Test With</th>
+            <th>Expected</th>
+        </tr>
+        <tr>
+            <td>Open mode: Current</td>
+            <td>Test 1</td>
+            <td>Tabs open in current window, no group</td>
+        </tr>
+        <tr>
+            <td>Open mode: Group</td>
+            <td>Test 1</td>
+            <td>Tabs open in current window, in a group labelled "Links"</td>
+        </tr>
+        <tr>
+            <td>Open mode: New window</td>
+            <td>Test 1</td>
+            <td>New browser window opens with all tabs</td>
+        </tr>
+        <tr>
+            <td>Focus first tab: ON</td>
+            <td>Test 1</td>
+            <td>Browser switches to first new tab</td>
+        </tr>
+        <tr>
+            <td>Focus first tab: OFF</td>
+            <td>Test 1</td>
+            <td>Browser stays on current tab</td>
+        </tr>
+        <tr>
+            <td>Remove duplicates: ON</td>
+            <td>Test 4</td>
+            <td>1 tab opens</td>
+        </tr>
+        <tr>
+            <td>Remove duplicates: OFF</td>
+            <td>Test 4</td>
+            <td>3 tabs open</td>
+        </tr>
+    </table>
+
+    <h2>Keyboard Shortcut Test</h2>
+    <p>Select any test block above, then press <strong>Ctrl+Shift+L</strong> (or your configured shortcut). Same behaviour as right-click should occur.</p>
+
+</body>
+</html>
