@@ -1,3 +1,10 @@
+/* Prevent transitions on initial load */
+.no-transitions *,
+.no-transitions *::after,
+.no-transitions *::before {
+    transition: none !important;
+}
+
 /* System theme detection */
 :root {
     --bg-primary: #fff;
@@ -115,12 +122,20 @@ body {
     padding: 8px 4px;
     cursor: pointer;
     border-radius: 6px;
-    transition: background 0.15s ease;
 }
 
-    .section-toggle:hover {
-        background: var(--hover-bg);
-    }
+.section-toggle-icon {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-secondary);
+    transition: transform 0.2s ease, fill 0.15s ease;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.section-toggle:hover .section-toggle-icon {
+    fill: var(--text-primary);
+}
 
 .section-toggle-title {
     font-size: 11px;

@@ -56,8 +56,32 @@ document.querySelectorAll(".section-toggle").forEach(toggle => {
 
         toggle.setAttribute("aria-expanded", !isExpanded);
         content.classList.toggle("collapsed", isExpanded);
+
+        // Remember state
+        chrome.storage.local.set({ [`collapsed_${targetId}`]: isExpanded });
     });
 });
+
+// Disable all transitions on load
+document.body.classList.add("no-transitions");
+
+// Restore collapsed state
+async function restoreCollapsedState() {
+    const toggles = document.querySelectorAll(".section-toggle");
+
+    for (const toggle of toggles) {
+        const targetId = toggle.dataset.target;
+        const data = await chrome.storage.local.get([`collapsed_${targetId}`]);
+        const isCollapsed = data[`collapsed_${targetId}`] || false;
+
+        if (isCollapsed) {
+            toggle.setAttribute("aria-expanded", "false");
+            document.getElementById(targetId).classList.add("collapsed");
+        }
+    }
+}
+
+restoreCollapsedState();
 
 // Make settings items toggle their checkbox when clicked anywhere on the row
 document.querySelectorAll(".settings-item").forEach(item => {
@@ -161,6 +185,13 @@ document.getElementById("change-shortcut").addEventListener("click", () => {
 });
 
 // Initial load
-loadSettings();
+loadSettings().then(() => {
+    // Re-enable transitions after everything is set
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            document.body.classList.remove("no-transitions");
+        });
+    });
+});
 updateExtensionIcon();
 displayShortcuts();
