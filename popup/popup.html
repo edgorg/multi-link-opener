@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Opener</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Link Opener</h1>
+        </header>
+
+        <div class="instructions">
+            <p>Select text containing links, then right-click and choose <strong>"Open links in selection"</strong></p>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="settings-section-title">Options</div>
+
+        <div class="settings-list">
+            <div class="settings-item" data-for="remove-duplicates">
+                <span class="settings-item-content">
+                    <span class="settings-item-label">Remove duplicates</span>
+                    <span class="settings-item-description">Only open unique links</span>
+                </span>
+                <span class="toggle-switch-small">
+                    <input type="checkbox" id="remove-duplicates" checked>
+                    <span class="toggle-slider-small"></span>
+                </span>
+            </div>
+
+            <div class="settings-item" data-for="open-in-group">
+                <span class="settings-item-content">
+                    <span class="settings-item-label">Open in tab group</span>
+                    <span class="settings-item-description">Group opened links together</span>
+                </span>
+                <span class="toggle-switch-small">
+                    <input type="checkbox" id="open-in-group">
+                    <span class="toggle-slider-small"></span>
+                </span>
+            </div>
+
+            <div class="settings-item" data-for="focus-first-tab">
+                <span class="settings-item-content">
+                    <span class="settings-item-label">Focus first tab</span>
+                    <span class="settings-item-description">Switch to the first opened link</span>
+                </span>
+                <span class="toggle-switch-small">
+                    <input type="checkbox" id="focus-first-tab">
+                    <span class="toggle-slider-small"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
