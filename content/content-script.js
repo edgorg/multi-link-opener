@@ -22,8 +22,10 @@ if (!window.__linkGrabInjected) {
                 // Extract href from all <a> tags in the selection
                 const links = container.querySelectorAll("a[href]");
                 links.forEach(link => {
-                    const href = link.href;
-                    if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
+                    let href = link.href;
+                    // Remove trailing slash for consistency
+                    href = href.replace(/\/+$/, "");
+                    if (href.startsWith("http://") || href.startsWith("https://")) {
                         urls.push(href);
                     }
                 });

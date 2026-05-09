@@ -21,8 +21,10 @@
             // Extract hrefs from anchor tags
             const links = container.querySelectorAll("a[href]");
             links.forEach(link => {
-                if (link.href.startsWith("http://") || link.href.startsWith("https://")) {
-                    urls.add(link.href);
+                let href = link.href;
+                href = href.replace(/\/+$/, "");
+                if (href.startsWith("http://") || href.startsWith("https://")) {
+                    urls.add(href);
                 }
             });
 
