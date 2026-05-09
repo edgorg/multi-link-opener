@@ -4,6 +4,8 @@ const maxTabsInput = document.getElementById("max-tabs");
 const showPreviewCheckbox = document.getElementById("show-preview");
 const segmentedControl = document.getElementById("open-mode");
 const segments = segmentedControl.querySelectorAll(".segment");
+const groupNameSection = document.getElementById("group-name-section");
+const groupNameInput = document.getElementById("group-name");
 
 // Load saved settings
 async function loadSettings() {
@@ -12,13 +14,15 @@ async function loadSettings() {
         "focusFirstTab",
         "maxTabs",
         "showPreview",
-        "openMode"
+        "openMode",
+        "groupName"
     ]);
 
     removeDuplicatesCheckbox.checked = data.removeDuplicates !== false;
     focusFirstTabCheckbox.checked = data.focusFirstTab || false;
     maxTabsInput.value = data.maxTabs || 20;
     showPreviewCheckbox.checked = data.showPreview || false;
+    groupNameInput.value = data.groupName || "";
 
     const openMode = data.openMode || "normal";
     segments.forEach(seg => {
@@ -26,6 +30,8 @@ async function loadSettings() {
         seg.classList.toggle("active", isActive);
         seg.setAttribute("aria-checked", isActive);
     });
+
+    groupNameSection.classList.toggle("collapsed", openMode !== "group");
 }
 
 // Save settings
@@ -43,7 +49,8 @@ async function saveSettings() {
         focusFirstTab: focusFirstTabCheckbox.checked,
         maxTabs,
         showPreview: showPreviewCheckbox.checked,
-        openMode
+        openMode,
+        groupName: groupNameInput.value
     });
 }
 
@@ -104,6 +111,9 @@ segments.forEach(segment => {
         });
         segment.classList.add("active");
         segment.setAttribute("aria-checked", "true");
+
+        groupNameSection.classList.toggle("collapsed", segment.dataset.value !== "group");
+
         saveSettings();
     });
 });
@@ -142,6 +152,7 @@ removeDuplicatesCheckbox.addEventListener("change", saveSettings);
 focusFirstTabCheckbox.addEventListener("change", saveSettings);
 maxTabsInput.addEventListener("change", saveSettings);
 showPreviewCheckbox.addEventListener("change", saveSettings);
+groupNameInput.addEventListener("input", saveSettings);
 
 // Update extension icon based on current theme
 function updateExtensionIcon() {

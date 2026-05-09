@@ -24,7 +24,6 @@ function updateContextMenuTitle(count) {
 function extractUrlsFromText(text) {
     const urlPattern = /https?:\/\/[^\s<>"')\]]+/gi;
     const matches = text.match(urlPattern) || [];
-
     return matches.map(url => {
         return url.replace(/[.,;:!?)}\]]+$/, "");
     });
@@ -100,22 +99,24 @@ async function loadSettings() {
         "focusFirstTab",
         "maxTabs",
         "showPreview",
-        "openMode"
+        "openMode",
+        "groupName"
     ]);
 
     return {
         removeDuplicates: data.removeDuplicates !== false,
-        focusFirstTab: data.focusFirstTab || true,
+        focusFirstTab: data.focusFirstTab || false,
         maxTabs: data.maxTabs || 20,
-        showPreview: data.showPreview || true,
-        openMode: data.openMode || "normal"
+        showPreview: data.showPreview || false,
+        openMode: data.openMode || "normal",
+        groupName: data.groupName || ""
     };
 }
 
 // Open URLs based on user settings
 async function openUrls(urls, settings) {
-    const removeDuplicates = settings.removeDuplicates || true;
-    const focusFirstTab = settings.focusFirstTab || true;
+    const removeDuplicates = settings.removeDuplicates !== false;
+    const focusFirstTab = settings.focusFirstTab || false;
     const maxTabs = settings.maxTabs || 20;
     const openMode = settings.openMode || "normal";
 
@@ -163,8 +164,19 @@ async function openUrls(urls, settings) {
 
     if (openMode === "group" && newTabIds.length > 0) {
         const groupId = await chrome.tabs.group({ tabIds: newTabIds });
+
+        const baseName = settings.groupName || "Links";
+        const now = new Date();
+        const dateTime = now.toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+        const title = `${baseName} - ${dateTime}`;
+
         chrome.tabGroups.update(groupId, {
-            title: "Links",
+            title,
             collapsed: false
         });
     }
@@ -188,7 +200,6 @@ async function processUrls(urls, tabId, fallbackText) {
     const settings = await loadSettings();
 
     if (settings.showPreview) {
-        // Apply deduplication and max tabs before showing preview
         let previewUrls = [...urls];
 
         if (settings.removeDuplicates) {
@@ -199,17 +210,15 @@ async function processUrls(urls, tabId, fallbackText) {
             previewUrls = previewUrls.slice(0, settings.maxTabs);
         }
 
-        // Show preview overlay — the overlay will send OPEN_CONFIRMED_LINKS when confirmed
         await showPreview(tabId, previewUrls);
     } else {
-        // Open directly
         await openUrls(urls, settings);
     }
 }
 
 // Handle context menu click
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId !== "open-links-in-selection") return;
+    if (info.menuItemId !== "links-in-selection") return;
 
     let urls = await getLinksFromSelection(tab.id);
     const fallbackText = info.selectionText || "";
@@ -303,7 +312,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     }
 });
 
-// Handle confirmed links from preview overlay
+// Handle messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "SELECTION_LINK_COUNT") {
         updateContextMenuTitle(message.count);
@@ -313,12 +322,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.type === "OPEN_CONFIRMED_LINKS") {
         loadSettings().then(settings => {
-            // Don't re-deduplicate or re-slice — user already confirmed these
             openUrls(message.urls, {
                 removeDuplicates: false,
                 focusFirstTab: settings.focusFirstTab,
                 maxTabs: 999,
-                openMode: settings.openMode
+                openMode: settings.openMode,
+                groupName: settings.groupName
             });
         });
         sendResponse({ success: true });

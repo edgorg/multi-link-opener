@@ -428,3 +428,57 @@ body {
         -webkit-appearance: none;
         margin: 0;
     }
+
+
+/* Group name section */
+/* Group name section - animated show/hide */
+.group-name-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    margin-top: 4px;
+    border-radius: 8px;
+    max-height: 50px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease, margin 0.2s ease;
+}
+
+.group-name-section.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 10px;
+    margin: 0;
+}
+
+.group-name-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.group-name-input {
+    font-size: 11px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    width: 120px;
+    text-align: right;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+    .group-name-input:focus {
+        border-color: var(--accent);
+    }
+
+    .group-name-input::placeholder {
+        color: var(--text-secondary);
+    }
+
+.hidden {
+    display: none;
+}
