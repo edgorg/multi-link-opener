@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Link Opener - Test Page</title>
+    <title>Link Grab - Test Page</title>
     <style>
         body {
             font-family: sans-serif;
@@ -22,64 +22,79 @@
             border-radius: 8px;
             margin: 12px 0;
         }
+
+        table {
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
     </style>
 </head>
 <body>
-    <h1>Link Opener - Test Page</h1>
-    <p>Use this page to test the extension. Select text in each block, right-click, and choose "Open links in selection".</p>
+    <h1>Link Grab - Test Page</h1>
+    <p>Use this page to test the extension. Select text in each block, right-click, and choose "Links in selection".</p>
 
     <h2>Test 1: Raw URLs in text</h2>
     <div class="test-block">
         Check out https://example.com and also visit https://google.com for more info.
         You might also like https://github.com which is great for developers.
     </div>
-    <p><strong>Expected:</strong> 3 tabs open (example.com, google.com, github.com)</p>
+    <p><strong>Expected:</strong> 3 links found. Context menu shows "(3)".</p>
 
     <h2>Test 2: Hyperlinked text (href differs from visible text)</h2>
     <div class="test-block">
         Visit <a href="https://www.wikipedia.org">the free encyclopedia</a> and
         <a href="https://stackoverflow.com">the developer Q&A site</a> for help.
     </div>
-    <p><strong>Expected:</strong> 2 tabs open (wikipedia.org, stackoverflow.com)</p>
+    <p><strong>Expected:</strong> 2 links found (wikipedia.org, stackoverflow.com).</p>
 
     <h2>Test 3: Mixed raw URLs and hyperlinks</h2>
     <div class="test-block">
         Here's a raw link https://example.com and a
         <a href="https://mozilla.org">hyperlinked one</a> in the same selection.
     </div>
-    <p><strong>Expected:</strong> 2 tabs open (example.com, mozilla.org)</p>
+    <p><strong>Expected:</strong> 2 links found (example.com, mozilla.org).</p>
 
     <h2>Test 4: Duplicate links</h2>
     <div class="test-block">
         Visit https://example.com here, and also https://example.com here again.
         Plus <a href="https://example.com">this link</a> which is the same.
     </div>
-    <p><strong>Expected (duplicates ON):</strong> 1 tab opens</p>
-    <p><strong>Expected (duplicates OFF):</strong> 3 tabs open</p>
+    <p><strong>Expected (duplicates ON):</strong> 1 link opened.</p>
+    <p><strong>Expected (duplicates OFF):</strong> 3 links opened.</p>
 
     <h2>Test 5: No links in selection</h2>
     <div class="test-block">
         This is just plain text with no links at all. Nothing to open here.
     </div>
-    <p><strong>Expected:</strong> Nothing happens</p>
+    <p><strong>Expected:</strong> Context menu shows no count. Red badge "0" appears on click.</p>
 
     <h2>Test 6: Links with trailing punctuation</h2>
     <div class="test-block">
         Check https://example.com, and https://google.com. Also see https://github.com!
     </div>
-    <p><strong>Expected:</strong> 3 clean tabs open (no trailing commas/periods in URLs)</p>
+    <p><strong>Expected:</strong> 3 clean links (no trailing commas/periods in URLs).</p>
 
     <h2>Test 7: Links in parentheses</h2>
     <div class="test-block">
         More info available (https://example.com) and also (https://google.com).
     </div>
-    <p><strong>Expected:</strong> 2 tabs open with clean URLs</p>
+    <p><strong>Expected:</strong> 2 links with clean URLs.</p>
 
     <h2>Test 8: Single link</h2>
     <div class="test-block">
         Just one link: <a href="https://example.com">click here</a>
     </div>
-    <p><strong>Expected:</strong> 1 tab opens</p>
+    <p><strong>Expected:</strong> 1 link found.</p>
 
     <h2>Test 9: Many links (stress test)</h2>
     <div class="test-block">
@@ -94,11 +109,40 @@
         <a href="https://example.com/9">Link 9</a>
         <a href="https://example.com/10">Link 10</a>
     </div>
-    <p><strong>Expected:</strong> 10 tabs open</p>
+    <p><strong>Expected:</strong> 10 links found. Context menu shows "(10)".</p>
+
+    <h2>Test 10: Max tabs limit</h2>
+    <div class="test-block">
+        <a href="https://example.com/1">Link 1</a>
+        <a href="https://example.com/2">Link 2</a>
+        <a href="https://example.com/3">Link 3</a>
+        <a href="https://example.com/4">Link 4</a>
+        <a href="https://example.com/5">Link 5</a>
+        <a href="https://example.com/6">Link 6</a>
+        <a href="https://example.com/7">Link 7</a>
+        <a href="https://example.com/8">Link 8</a>
+        <a href="https://example.com/9">Link 9</a>
+        <a href="https://example.com/10">Link 10</a>
+        <a href="https://example.com/11">Link 11</a>
+        <a href="https://example.com/12">Link 12</a>
+        <a href="https://example.com/13">Link 13</a>
+        <a href="https://example.com/14">Link 14</a>
+        <a href="https://example.com/15">Link 15</a>
+        <a href="https://example.com/16">Link 16</a>
+        <a href="https://example.com/17">Link 17</a>
+        <a href="https://example.com/18">Link 18</a>
+        <a href="https://example.com/19">Link 19</a>
+        <a href="https://example.com/20">Link 20</a>
+        <a href="https://example.com/21">Link 21</a>
+        <a href="https://example.com/22">Link 22</a>
+        <a href="https://example.com/23">Link 23</a>
+        <a href="https://example.com/24">Link 24</a>
+        <a href="https://example.com/25">Link 25</a>
+    </div>
+    <p><strong>Expected:</strong> With max tabs set to 20, only 20 tabs open.</p>
 
     <h2>Settings Tests</h2>
-    <p>Use the test blocks above with different settings:</p>
-    <table border="1" cellpadding="8" style="border-collapse: collapse;">
+    <table>
         <tr>
             <th>Setting</th>
             <th>Test With</th>
@@ -139,10 +183,66 @@
             <td>Test 4</td>
             <td>3 tabs open</td>
         </tr>
+        <tr>
+            <td>Preview: ON</td>
+            <td>Test 1</td>
+            <td>Preview panel appears with checkboxes</td>
+        </tr>
+        <tr>
+            <td>Preview: ON + Copy button</td>
+            <td>Test 1</td>
+            <td>Clicking Copy copies links, shows "Copied!"</td>
+        </tr>
+        <tr>
+            <td>Max tabs: 5</td>
+            <td>Test 9</td>
+            <td>Only 5 tabs open</td>
+        </tr>
     </table>
 
-    <h2>Keyboard Shortcut Test</h2>
-    <p>Select any test block above, then press <strong>Ctrl+Shift+L</strong> (or your configured shortcut). Same behaviour as right-click should occur.</p>
+    <h2>Keyboard Shortcut Tests</h2>
+    <table>
+        <tr>
+            <th>Shortcut</th>
+            <th>Test With</th>
+            <th>Expected</th>
+        </tr>
+        <tr>
+            <td>Ctrl+Shift+L</td>
+            <td>Test 1</td>
+            <td>Opens links (same as context menu)</td>
+        </tr>
+        <tr>
+            <td>Ctrl+Shift+K</td>
+            <td>Test 1</td>
+            <td>Copies links to clipboard, shows toast notification</td>
+        </tr>
+        <tr>
+            <td>Ctrl+Shift+L (no selection)</td>
+            <td>No text selected</td>
+            <td>Nothing happens / red badge "0"</td>
+        </tr>
+    </table>
+
+    <h2>Context Menu Count Tests</h2>
+    <table>
+        <tr>
+            <th>Action</th>
+            <th>Expected Context Menu Text</th>
+        </tr>
+        <tr>
+            <td>Select Test 1 block</td>
+            <td>"Links in selection (3)"</td>
+        </tr>
+        <tr>
+            <td>Select Test 5 block</td>
+            <td>"Links in selection"</td>
+        </tr>
+        <tr>
+            <td>Select Test 9 block</td>
+            <td>"Links in selection (10)"</td>
+        </tr>
+    </table>
 
 </body>
 </html>

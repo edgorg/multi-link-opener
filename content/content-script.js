@@ -1,6 +1,6 @@
 // Prevent double-injection
-if (!window.__linkOpenerInjected) {
-    window.__linkOpenerInjected = true;
+if (!window.__linkGrabInjected) {
+    window.__linkGrabInjected = true;
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.type === "GET_SELECTED_LINKS") {

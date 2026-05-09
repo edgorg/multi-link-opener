@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Multi Link - Open links in selection",
+    "name": "Link Grab - Open Links in Selection",
     "version": "1.0.0",
-    "description": "Open all links in selected text via the context menu",
+    "description": "Open or copy all links in selected text",
     "permissions": [
         "contextMenus",
         "tabs",

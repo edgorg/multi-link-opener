@@ -1,6 +1,6 @@
 (function () {
-    if (window.__linkOpenerSelectionMonitor) return;
-    window.__linkOpenerSelectionMonitor = true;
+    if (window.__linkGrabSelectionMonitor) return;
+    window.__linkGrabSelectionMonitor = true;
 
     let debounceTimer = null;
 

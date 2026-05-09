@@ -1,9 +1,9 @@
 ﻿(function () {
-    const existing = document.getElementById("link-opener-preview");
+    const existing = document.getElementById("link-grab-preview");
     if (existing) existing.remove();
 
-    if (window.__linkOpenerPreviewListener) {
-        chrome.runtime.onMessage.removeListener(window.__linkOpenerPreviewListener);
+    if (window.__linkGrabPreviewListener) {
+        chrome.runtime.onMessage.removeListener(window.__linkGrabPreviewListener);
     }
 
     function truncateUrl(url) {
@@ -17,11 +17,11 @@
     }
 
     function showPreview(urls) {
-        const existing = document.getElementById("link-opener-preview");
+        const existing = document.getElementById("link-grab-preview");
         if (existing) existing.remove();
 
         const overlay = document.createElement("div");
-        overlay.id = "link-opener-preview";
+        overlay.id = "link-grab-preview";
         overlay.innerHTML = `
       <div class="lo-backdrop"></div>
       <div class="lo-panel">
@@ -53,7 +53,7 @@
 
         const style = document.createElement("style");
         style.textContent = `
-      #link-opener-preview {
+      #link-grab-preview {
         position: fixed;
         top: 0;
         left: 0;
@@ -63,7 +63,7 @@
         font-family: "Segoe UI", Roboto, sans-serif;
         font-size: 13px;
       }
-      #link-opener-preview .lo-backdrop {
+      #link-grab-preview .lo-backdrop {
         position: absolute;
         top: 0;
         left: 0;
@@ -71,7 +71,7 @@
         height: 100%;
         background: rgba(0, 0, 0, 0.4);
       }
-      #link-opener-preview .lo-panel {
+      #link-grab-preview .lo-panel {
         position: absolute;
         top: 50%;
         left: 50%;
@@ -90,19 +90,19 @@
         from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
         to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       }
-      #link-opener-preview .lo-header {
+      #link-grab-preview .lo-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 16px 20px;
         border-bottom: 1px solid #dadce0;
       }
-      #link-opener-preview .lo-title {
+      #link-grab-preview .lo-title {
         font-size: 14px;
         font-weight: 500;
         color: #202124;
       }
-      #link-opener-preview .lo-close {
+      #link-grab-preview .lo-close {
         background: none;
         border: none;
         font-size: 18px;
@@ -112,15 +112,15 @@
         border-radius: 50%;
         line-height: 1;
       }
-      #link-opener-preview .lo-close:hover {
+      #link-grab-preview .lo-close:hover {
         background: #f1f3f4;
       }
-      #link-opener-preview .lo-list {
+      #link-grab-preview .lo-list {
         flex: 1;
         overflow-y: auto;
         padding: 8px 12px;
       }
-      #link-opener-preview .lo-item {
+      #link-grab-preview .lo-item {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -129,35 +129,35 @@
         cursor: pointer;
         transition: background 0.1s ease;
       }
-      #link-opener-preview .lo-item:hover {
+      #link-grab-preview .lo-item:hover {
         background: #f8f9fa;
       }
-      #link-opener-preview .lo-item input[type="checkbox"] {
+      #link-grab-preview .lo-item input[type="checkbox"] {
         accent-color: #1a73e8;
         width: 14px;
         height: 14px;
         flex-shrink: 0;
       }
-      #link-opener-preview .lo-url {
+      #link-grab-preview .lo-url {
         color: #1a73e8;
         font-size: 12px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      #link-opener-preview .lo-footer {
+      #link-grab-preview .lo-footer {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 12px 20px;
         border-top: 1px solid #dadce0;
       }
-      #link-opener-preview .lo-select-controls {
+      #link-grab-preview .lo-select-controls {
         display: flex;
         gap: 8px;
       }
-      #link-opener-preview .lo-select-all,
-      #link-opener-preview .lo-select-none {
+      #link-grab-preview .lo-select-all,
+      #link-grab-preview .lo-select-none {
         background: none;
         border: none;
         color: #5f6368;
@@ -166,16 +166,16 @@
         padding: 4px 8px;
         border-radius: 4px;
       }
-      #link-opener-preview .lo-select-all:hover,
-      #link-opener-preview .lo-select-none:hover {
+      #link-grab-preview .lo-select-all:hover,
+      #link-grab-preview .lo-select-none:hover {
         background: #f1f3f4;
         color: #202124;
       }
-      #link-opener-preview .lo-actions {
+      #link-grab-preview .lo-actions {
         display: flex;
         gap: 8px;
       }
-      #link-opener-preview .lo-cancel {
+      #link-grab-preview .lo-cancel {
         background: none;
         border: 1px solid #dadce0;
         color: #5f6368;
@@ -186,10 +186,10 @@
         cursor: pointer;
         transition: background 0.1s ease;
       }
-      #link-opener-preview .lo-cancel:hover {
+      #link-grab-preview .lo-cancel:hover {
         background: #f1f3f4;
       }
-      #link-opener-preview .lo-copy {
+      #link-grab-preview .lo-copy {
         background: none;
         border: 1px solid #dadce0;
         color: #5f6368;
@@ -200,20 +200,20 @@
         cursor: pointer;
         transition: background 0.1s ease;
       }
-      #link-opener-preview .lo-copy:hover {
+      #link-grab-preview .lo-copy:hover {
         background: #f1f3f4;
       }
-      #link-opener-preview .lo-copy:disabled {
+      #link-grab-preview .lo-copy:disabled {
         color: #dadce0;
         border-color: #dadce0;
         cursor: default;
         background: none;
       }
-      #link-opener-preview .lo-copy.copied {
+      #link-grab-preview .lo-copy.copied {
         border-color: #34a853;
         color: #34a853;
       }
-      #link-opener-preview .lo-confirm {
+      #link-grab-preview .lo-confirm {
         background: #1a73e8;
         border: none;
         color: #fff;
@@ -224,83 +224,83 @@
         cursor: pointer;
         transition: background 0.1s ease;
       }
-      #link-opener-preview .lo-confirm:hover {
+      #link-grab-preview .lo-confirm:hover {
         background: #1557b0;
       }
-      #link-opener-preview .lo-confirm:disabled {
+      #link-grab-preview .lo-confirm:disabled {
         background: #dadce0;
         color: #5f6368;
         cursor: default;
       }
       @media (prefers-color-scheme: dark) {
-        #link-opener-preview .lo-panel {
+        #link-grab-preview .lo-panel {
           background: #292a2d;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
-        #link-opener-preview .lo-header {
+        #link-grab-preview .lo-header {
           border-bottom-color: #3c4043;
         }
-        #link-opener-preview .lo-title {
+        #link-grab-preview .lo-title {
           color: #e8eaed;
         }
-        #link-opener-preview .lo-close {
+        #link-grab-preview .lo-close {
           color: #9aa0a6;
         }
-        #link-opener-preview .lo-close:hover {
+        #link-grab-preview .lo-close:hover {
           background: #35363a;
         }
-        #link-opener-preview .lo-item:hover {
+        #link-grab-preview .lo-item:hover {
           background: #35363a;
         }
-        #link-opener-preview .lo-item input[type="checkbox"] {
+        #link-grab-preview .lo-item input[type="checkbox"] {
           accent-color: #8ab4f8;
         }
-        #link-opener-preview .lo-url {
+        #link-grab-preview .lo-url {
           color: #8ab4f8;
         }
-        #link-opener-preview .lo-footer {
+        #link-grab-preview .lo-footer {
           border-top-color: #3c4043;
         }
-        #link-opener-preview .lo-select-all,
-        #link-opener-preview .lo-select-none {
+        #link-grab-preview .lo-select-all,
+        #link-grab-preview .lo-select-none {
           color: #9aa0a6;
         }
-        #link-opener-preview .lo-select-all:hover,
-        #link-opener-preview .lo-select-none:hover {
+        #link-grab-preview .lo-select-all:hover,
+        #link-grab-preview .lo-select-none:hover {
           background: #35363a;
           color: #e8eaed;
         }
-        #link-opener-preview .lo-cancel {
+        #link-grab-preview .lo-cancel {
           border-color: #3c4043;
           color: #9aa0a6;
         }
-        #link-opener-preview .lo-cancel:hover {
+        #link-grab-preview .lo-cancel:hover {
           background: #35363a;
         }
-        #link-opener-preview .lo-copy {
+        #link-grab-preview .lo-copy {
           border-color: #3c4043;
           color: #9aa0a6;
         }
-        #link-opener-preview .lo-copy:hover {
+        #link-grab-preview .lo-copy:hover {
           background: #35363a;
         }
-        #link-opener-preview .lo-copy:disabled {
+        #link-grab-preview .lo-copy:disabled {
           color: #3c4043;
           border-color: #3c4043;
           background: none;
         }
-        #link-opener-preview .lo-copy.copied {
+        #link-grab-preview .lo-copy.copied {
           border-color: #34a853;
           color: #34a853;
         }
-        #link-opener-preview .lo-confirm {
+        #link-grab-preview .lo-confirm {
           background: #8ab4f8;
           color: #202124;
         }
-        #link-opener-preview .lo-confirm:hover {
+        #link-grab-preview .lo-confirm:hover {
           background: #aecbfa;
         }
-        #link-opener-preview .lo-confirm:disabled {
+        #link-grab-preview .lo-confirm:disabled {
           background: #3c4043;
           color: #5f6368;
         }
@@ -405,12 +405,12 @@
         updateButtons();
     }
 
-    window.__linkOpenerPreviewListener = (message, sender, sendResponse) => {
+    window.__linkGrabPreviewListener = (message, sender, sendResponse) => {
         if (message.type === "SHOW_PREVIEW") {
             showPreview(message.urls);
             sendResponse({ success: true });
         }
     };
 
-    chrome.runtime.onMessage.addListener(window.__linkOpenerPreviewListener);
+    chrome.runtime.onMessage.addListener(window.__linkGrabPreviewListener);
 })();

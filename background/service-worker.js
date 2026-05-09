@@ -255,11 +255,11 @@ chrome.commands.onCommand.addListener(async (command) => {
             await chrome.scripting.executeScript({
                 target: { tabId: tab.id },
                 func: (count) => {
-                    const existing = document.getElementById("link-opener-toast");
+                    const existing = document.getElementById("link-grab-toast");
                     if (existing) existing.remove();
 
                     const toast = document.createElement("div");
-                    toast.id = "link-opener-toast";
+                    toast.id = "link-grab-toast";
                     toast.textContent = `${count} link${count === 1 ? "" : "s"} copied to clipboard`;
                     toast.style.cssText = `
             position: fixed;
