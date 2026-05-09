@@ -19,9 +19,9 @@ async function loadSettings() {
     ]);
 
     removeDuplicatesCheckbox.checked = data.removeDuplicates !== false;
-    focusFirstTabCheckbox.checked = data.focusFirstTab || false;
+    focusFirstTabCheckbox.checked = data.focusFirstTab !== false;
     maxTabsInput.value = data.maxTabs || 20;
-    showPreviewCheckbox.checked = data.showPreview || false;
+    showPreviewCheckbox.checked = data.showPreview !== false;
     groupNameInput.value = data.groupName || "";
 
     const openMode = data.openMode || "normal";

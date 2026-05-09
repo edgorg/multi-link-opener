@@ -105,9 +105,9 @@ async function loadSettings() {
 
     return {
         removeDuplicates: data.removeDuplicates !== false,
-        focusFirstTab: data.focusFirstTab || false,
+        focusFirstTab: data.focusFirstTab !== false,
         maxTabs: data.maxTabs || 20,
-        showPreview: data.showPreview || false,
+        showPreview: data.showPreview !== false,
         openMode: data.openMode || "normal",
         groupName: data.groupName || ""
     };
