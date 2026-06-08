@@ -92,14 +92,18 @@ restoreCollapsedState();
 
 // Make settings items toggle their checkbox when clicked anywhere on the row
 document.querySelectorAll(".settings-item").forEach(item => {
-    item.addEventListener("click", (e) => {
-        if (e.target.type === "checkbox") return;
+  item.addEventListener("click", (e) => {
+    if (e.target.type === "checkbox") return;
 
-        const checkboxId = item.dataset.for;
-        const checkbox = document.getElementById(checkboxId);
-        checkbox.checked = !checkbox.checked;
-        checkbox.dispatchEvent(new Event("change"));
-    });
+    const checkboxId = item.dataset.for;
+    if (!checkboxId) return;
+
+    const checkbox = document.getElementById(checkboxId);
+    if (!checkbox) return;
+
+    checkbox.checked = !checkbox.checked;
+    checkbox.dispatchEvent(new Event("change"));
+  });
 });
 
 // Segmented control handler
