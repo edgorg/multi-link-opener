@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Link Grab - Open All Links in Selection & Copy URLs",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Open or copy all links from selected text. Preview links before opening. Includes tab grouping and keyboard shortcuts.",
     "permissions": [
         "contextMenus",
